@@ -25,6 +25,8 @@ namespace CreepyDonut.Models
         public required string PhoneNumber { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public Cart? Cart { get; set; }
     }
 }
 
