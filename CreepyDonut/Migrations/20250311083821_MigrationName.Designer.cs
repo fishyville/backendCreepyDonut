@@ -4,6 +4,7 @@ using CreepyDonut.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CreepyDonut.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    partial class ApiContextModelSnapshot : ModelSnapshot
+    [Migration("20250311083821_MigrationName")]
+    partial class MigrationName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,23 +68,6 @@ namespace CreepyDonut.Migrations
                     b.ToTable("CartItems");
                 });
 
-            modelBuilder.Entity("CreepyDonut.Models.Category", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CategoryId");
-
-                    b.ToTable("Categories");
-                });
-
             modelBuilder.Entity("CreepyDonut.Models.Product", b =>
                 {
                     b.Property<int>("ProductId")
@@ -89,9 +75,6 @@ namespace CreepyDonut.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -108,29 +91,12 @@ namespace CreepyDonut.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Quantity")
+                    b.Property<int>("QuantityAvailable")
                         .HasColumnType("int");
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("CreepyDonut.Models.ProductShop", b =>
-                {
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ShopId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProductId", "ShopId");
-
-                    b.HasIndex("ShopId");
-
-                    b.ToTable("ProductShops");
                 });
 
             modelBuilder.Entity("CreepyDonut.Models.Users", b =>
@@ -169,52 +135,6 @@ namespace CreepyDonut.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Review", b =>
-                {
-                    b.Property<int>("ReviewId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Rating")
-                        .HasColumnType("float");
-
-                    b.Property<string>("ReviewText")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ReviewId");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reviews");
-                });
-
-            modelBuilder.Entity("Shop", b =>
-                {
-                    b.Property<int>("ShopId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShopId"));
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ShopId");
-
-                    b.ToTable("Shops");
-                });
-
             modelBuilder.Entity("CreepyDonut.Models.Cart", b =>
                 {
                     b.HasOne("CreepyDonut.Models.Users", "User")
@@ -245,84 +165,19 @@ namespace CreepyDonut.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("CreepyDonut.Models.Product", b =>
-                {
-                    b.HasOne("CreepyDonut.Models.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("CreepyDonut.Models.ProductShop", b =>
-                {
-                    b.HasOne("CreepyDonut.Models.Product", "Product")
-                        .WithMany("ProductShops")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Shop", "Shop")
-                        .WithMany("ProductShops")
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Shop");
-                });
-
-            modelBuilder.Entity("Review", b =>
-                {
-                    b.HasOne("CreepyDonut.Models.Product", "Product")
-                        .WithMany("Reviews")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CreepyDonut.Models.Users", "User")
-                        .WithMany("Reviews")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("CreepyDonut.Models.Cart", b =>
                 {
                     b.Navigation("CartItems");
                 });
 
-            modelBuilder.Entity("CreepyDonut.Models.Category", b =>
-                {
-                    b.Navigation("Products");
-                });
-
             modelBuilder.Entity("CreepyDonut.Models.Product", b =>
                 {
                     b.Navigation("CartItems");
-
-                    b.Navigation("ProductShops");
-
-                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("CreepyDonut.Models.Users", b =>
                 {
                     b.Navigation("Cart");
-
-                    b.Navigation("Reviews");
-                });
-
-            modelBuilder.Entity("Shop", b =>
-                {
-                    b.Navigation("ProductShops");
                 });
 #pragma warning restore 612, 618
         }
