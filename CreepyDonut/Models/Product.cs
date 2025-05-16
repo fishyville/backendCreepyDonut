@@ -7,9 +7,20 @@
         public required string Description { get; set; }
         public decimal Price { get; set; }
         public required string ImageUrl { get; set; }
-        public int QuantityAvailable { get; set; }  // Adjusted field name
+        public int Quantity { get; set; }
 
-        // One Product -> Many CartItems (Many-to-Many via CartItem)
-        public List<CartItem> CartItems { get; set; } = new List<CartItem>();
+        // Many-to-One: Product -> Category
+        public int CategoryId { get; set; }
+        public Category Category { get; set; } = null!;
+
+        // Many-to-Many: Product <-> Shop (via ProductShop join table)
+        public List<ProductShop> ProductShops { get; set; } = new();
+
+        // One-to-Many: Product -> Reviews
+        public List<Review> Reviews { get; set; } = new();
+
+        // One-to-Many: Product -> CartItems
+        public List<CartItem> CartItems { get; set; } = new();
     }
 }
+

@@ -46,7 +46,7 @@ namespace CreepyDonut.Services
             existingProduct.Description = updatedProduct.Description;
             existingProduct.Price = updatedProduct.Price;
             existingProduct.ImageUrl = updatedProduct.ImageUrl;
-            existingProduct.QuantityAvailable = updatedProduct.QuantityAvailable;
+            existingProduct.Quantity = updatedProduct.Quantity;
 
             await _context.SaveChangesAsync();
             return true;

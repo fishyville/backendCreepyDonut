@@ -27,6 +27,8 @@ namespace CreepyDonut.Models
         public DateTime CreatedAt { get; set; }
 
         public Cart? Cart { get; set; }
+
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();  // one user has many reviews
     }
 }
 
