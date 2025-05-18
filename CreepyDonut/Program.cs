@@ -3,11 +3,11 @@ using CreepyDonut.Data;
 using CreepyDonut.Services;
 using CreepyDonut.Models;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Routing; 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -18,7 +18,6 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CartItemService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -32,9 +31,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
+
+var endpointDataSource = app.Services.GetRequiredService<EndpointDataSource>();
+foreach (var endpoint in endpointDataSource.Endpoints)
+{
+    Console.WriteLine($"Endpoint: {endpoint.DisplayName}");
+}
 
 app.Run();

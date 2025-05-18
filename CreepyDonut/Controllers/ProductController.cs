@@ -3,6 +3,7 @@ using CreepyDonut.Models;
 using CreepyDonut.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CreepyDonut.DTO;
 
 namespace CreepyDonut.Controllers
 {
@@ -38,11 +39,23 @@ namespace CreepyDonut.Controllers
 
         // CREATE NEW PRODUCT
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Product product)
+        public async Task<IActionResult> Create([FromBody] NewProductDTO newProductDto)
         {
+            var product = new Product
+            {
+                Name = newProductDto.Name,
+                Description = newProductDto.Description,
+                Price = newProductDto.Price,
+                ImageUrl = newProductDto.ImageUrl,
+                Quantity = newProductDto.Quantity,
+                CategoryId = newProductDto.CategoryId
+            };
+
             var createdProduct = await _productService.CreateAsync(product);
+
             return CreatedAtAction(nameof(GetById), new { id = createdProduct.ProductId }, createdProduct);
         }
+
 
         // UPDATE PRODUCT
         [HttpPut("{id}")]

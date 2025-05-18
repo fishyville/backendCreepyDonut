@@ -3,6 +3,7 @@ using CreepyDonut.Models;
 using CreepyDonut.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CreepyDonut.DTO;
 
 namespace CreepyDonut.Controllers
 {
@@ -16,12 +17,24 @@ namespace CreepyDonut.Controllers
         {
             _userService = userService;
         }
-
+        // To get user list
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Users>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<UsersDTO>>> GetAllAsync()
         {
-            return Ok(await _userService.GetAllAsync());
+            var users = await _userService.GetAllAsync();
+            var userDtos = users.Select(static user => new UsersDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                Password = user.PasswordHash,
+                PhoneNumber = user.PhoneNumber,
+                CreatedAt = user.CreatedAt
+            });
+            Console.WriteLine("✅ Success: Fetched all users at " + DateTime.Now);
+            return Ok(userDtos);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Users>> GetAsync(int id)
@@ -32,11 +45,88 @@ namespace CreepyDonut.Controllers
             return Ok(user);
         }
 
+
+        // for register
         [HttpPost]
-        public async Task<ActionResult<Users>> PostAsync(Users user)
+        public async Task<ActionResult<UsersDTO>> PostAsync(RegisterDTO registerDto)
         {
-            var createdUser = await _userService.CreateAsync(user);
-            return CreatedAtAction(nameof(GetAsync), new { id = createdUser.UserId }, createdUser);
+            var newUser = new UsersDTO
+            {
+                UserId = 0,
+                Username = registerDto.Username,
+                Email = registerDto.Email,
+                Password = registerDto.Password,   
+                PhoneNumber = registerDto.PhoneNumber,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var createdUser = await _userService.CreateAsync(newUser);
+
+            var userDto = new UsersDTO
+            {
+                UserId = createdUser.UserId,
+                Username = createdUser.Username,
+                Email = createdUser.Email,
+                Password = createdUser.PasswordHash,  
+                PhoneNumber = createdUser.PhoneNumber,
+                CreatedAt = createdUser.CreatedAt
+            };
+
+            return CreatedAtAction(nameof(GetAsync), new { id = userDto.UserId }, userDto);
+        }
+
+        [HttpPost("login-username")]
+        public async Task<ActionResult<UsersDTO>> LoginWithUsername([FromBody] LoginRequestUsername loginDto)
+        {
+            var users = await _userService.GetAllAsync();
+            var user = users.FirstOrDefault(u =>
+                u.Username == loginDto.Username && u.PasswordHash == loginDto.Password);
+
+            if (user == null)
+            {
+                return Unauthorized("❌ Invalid username or password.");
+            }
+
+            Console.WriteLine($"✅ User '{user.Username}' logged in successfully with username.");
+
+            var userDto = new UsersDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                Password = user.PasswordHash,
+                PhoneNumber = user.PhoneNumber,
+                CreatedAt = user.CreatedAt
+            };
+
+            return Ok(userDto);
+        }
+
+        [HttpPost("login-email")]
+        public async Task<ActionResult<UsersDTO>> LoginWithEmail([FromBody] LoginRequestEmail loginDto)
+        {
+            var users = await _userService.GetAllAsync();
+            var user = users.FirstOrDefault(u =>
+                u.Email == loginDto.Email && u.PasswordHash == loginDto.Password);
+
+            if (user == null)
+            {
+                return Unauthorized("❌ Invalid email or password.");
+            }
+
+            Console.WriteLine($"✅ User '{user.Email}' logged in successfully with email.");
+
+            var userDto = new UsersDTO
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                Email = user.Email,
+                Password = user.PasswordHash,
+                PhoneNumber = user.PhoneNumber,
+                CreatedAt = user.CreatedAt
+            };
+
+            return Ok(userDto);
         }
 
         [HttpPut("{id}")]

@@ -3,6 +3,7 @@ using CreepyDonut.Data;
 using CreepyDonut.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CreepyDonut.DTO;
 
 namespace CreepyDonut.Services
 {
@@ -16,9 +17,22 @@ namespace CreepyDonut.Services
         }
 
         // GET ALL PRODUCTS
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<List<ProductResponseDTO>> GetAllAsync()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products
+                .Include(p => p.Category)
+                .Select(p => new ProductResponseDTO
+                {
+                    ProductId = p.ProductId,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Price = p.Price,
+                    ImageUrl = p.ImageUrl,
+                    Quantity = p.Quantity,
+                    CategoryId = p.CategoryId,
+                    CategoryName = p.Category.Name
+                })
+                .ToListAsync();
         }
 
         // GET PRODUCT BY ID

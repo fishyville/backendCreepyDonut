@@ -11,4 +11,24 @@
         public required string Email { get; set; }
         public required string Password { get; set; }
     }
+
+    public class UsersDTO
+    {
+
+        public required int UserId { get; set; }
+        public required string Username { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required string PhoneNumber { get; set; }
+        public required DateTime CreatedAt { get; set; }
+    }
+
+    public class RegisterDTO
+    {
+        public required string Username { get; set; }
+
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required string PhoneNumber { get; set; }
+    }
 }

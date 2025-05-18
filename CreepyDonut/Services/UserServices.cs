@@ -3,6 +3,7 @@ using CreepyDonut.Data;
 using CreepyDonut.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CreepyDonut.DTO;
 
 namespace CreepyDonut.Services
 {
@@ -25,8 +26,18 @@ namespace CreepyDonut.Services
             return await _context.Users.FindAsync(id);
         }
 
-        public async Task<Users> CreateAsync(Users user)
+        public async Task<Users> CreateAsync(UsersDTO userDto)
         {
+            var user = new Users
+            {
+                UserId = userDto.UserId,
+                Username = userDto.Username,
+                Email = userDto.Email,
+                PasswordHash = userDto.Password,
+                PhoneNumber = userDto.PhoneNumber,
+                CreatedAt = userDto.CreatedAt
+            };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return user;
