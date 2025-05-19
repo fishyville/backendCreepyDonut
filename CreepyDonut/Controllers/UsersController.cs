@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CreepyDonut.DTO;
 
+
 namespace CreepyDonut.Controllers
 {
     [Route("api/[controller]")]
@@ -17,7 +18,7 @@ namespace CreepyDonut.Controllers
         {
             _userService = userService;
         }
-        // To get user list
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UsersDTO>>> GetAllAsync()
         {
@@ -36,14 +37,36 @@ namespace CreepyDonut.Controllers
         }
 
 
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Users>> GetAsync(int id)
         {
             var user = await _userService.GetAsync(id);
             if (user == null)
-                return NotFound();
-            return Ok(user);
+            {
+                return NotFound(new { success = false, message = "User not found." });
+            }
+            return Ok(new
+            {
+                success = true,
+                message = "User retrieved successfully.",
+                data = user
+            });
         }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterAsync([FromBody] Users user)
+        {
+            // Check if username or email already exists
+            var existingUser = await _userService.GetByUsernameOrEmailAsync(user.Username, user.Email);
+            if (existingUser != null)
+                return BadRequest(new { message = "Username or email already in use" });
+
+            // Create the user with hashed password
+            var createdUser = await _userService.CreateAsync(user);
+            return Ok(new { message = "Registration successful", userId = createdUser.UserId });
+        }
+
 
 
         // for register
@@ -127,22 +150,45 @@ namespace CreepyDonut.Controllers
             };
 
             return Ok(userDto);
+
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAsync(int id, Users user)
+
+        // LOGIN (CUSTOMER)
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
         {
-            if (!await _userService.UpdateAsync(id, user))
-                return NotFound();
-            return NoContent();
+            var user = await _userService.AuthenticateAsync(request.Username, request.Password);
+            if (user == null)
+                return Unauthorized(new { message = "Invalid username or password" });
+
+            return Ok(new { message = "Login successful", userId = user.UserId });
         }
 
+
+        // UPDATE USER SESUAI ID 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAsync(int id, [FromBody] Users user)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { success = false, message = "Invalid request data." });
+
+            var updated = await _userService.UpdateAsync(id, user);
+            if (!updated)
+                return NotFound(new { success = false, message = "User not found." });
+
+            return Ok(new { success = true, message = "User updated successfully." });
+        }
+
+        // DELETE USER SESUAI ID
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            if (!await _userService.DeleteAsync(id))
-                return NotFound();
-            return NoContent();
+            var deleted = await _userService.DeleteAsync(id);
+            if (!deleted)
+                return NotFound(new { success = false, message = "User not found." });
+
+            return Ok(new { success = true, message = "User deleted successfully." });
         }
     }
 }
