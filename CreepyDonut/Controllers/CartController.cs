@@ -2,6 +2,7 @@
 using CreepyDonut.Models;
 using CreepyDonut.Services;
 using System.Threading.Tasks;
+using CreepyDonut.DTO;
 
 namespace CreepyDonut.Controllers
 {
@@ -18,13 +19,13 @@ namespace CreepyDonut.Controllers
 
         // GET CART BY USER ID
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetCart(int userId)
+        public async Task<IActionResult> GetCartByUserId(int userId)
         {
-            var cart = await _cartService.GetCartByUserIdAsync(userId);
-            if (cart == null)
-                return NotFound(new { message = "Cart not found for user" });
+            var cartDto = await _cartService.GetCartDtoByUserIdAsync(userId);
+            if (cartDto == null)
+                return NotFound("Cart not found");
 
-            return Ok(cart);
+            return Ok(cartDto);
         }
 
         // CREATE CART FOR USER
@@ -32,12 +33,12 @@ namespace CreepyDonut.Controllers
         public async Task<IActionResult> CreateCart(int userId)
         {
             var cart = await _cartService.CreateCartAsync(userId);
-            return CreatedAtAction(nameof(GetCart), new { userId = cart.UserId }, cart);
+            return CreatedAtAction(nameof(GetCartByUserId), new { userId = cart.UserId }, cart);
         }
 
         // ADD PRODUCT TO CART (Checks if cart exists, otherwise creates one)
         [HttpPost("{userId}/add-product")]
-        public async Task<IActionResult> AddProductToCart(int userId, [FromBody] CartItem cartItem)
+        public async Task<IActionResult> AddProductToCart(int userId, [FromBody] AddProductRequest request)
         {
             // Check if user already has a cart
             var cart = await _cartService.GetCartByUserIdAsync(userId);
@@ -49,7 +50,7 @@ namespace CreepyDonut.Controllers
             }
 
             // Add product to the cart
-            var success = await _cartService.AddProductToCartAsync(cart.CartId, cartItem.ProductId, cartItem.Quantity);
+            var success = await _cartService.AddProductToCartAsync(cart.CartId, request.ProductId, request.Quantity);
             if (!success)
                 return BadRequest(new { message = "Failed to add product to cart" });
 
@@ -57,26 +58,37 @@ namespace CreepyDonut.Controllers
         }
 
         // UPDATE CART ITEM QUANTITY
-        [HttpPut("update-quantity/{cartItemId}")]
-        public async Task<IActionResult> UpdateCartItemQuantity(int cartItemId, [FromBody] int quantity)
+        [HttpPut("update-quantity/{cartId}/{productId}")]
+        public async Task<IActionResult> UpdateCartItemQuantity(int cartId, int productId, [FromBody] updateQuantityRequest request)
         {
-            var success = await _cartService.UpdateCartItemQuantityAsync(cartItemId, quantity);
+            if (request.Quantity == 0)
+            {
+                var removed = await _cartService.RemoveProductFromCartAsync(cartId, productId);
+                if (!removed)
+                    return NotFound(new { message = "Cart item not found to remove" });
+
+                return Ok(new { message = "Cart item removed because quantity was set to 0" });
+            }
+
+            var success = await _cartService.UpdateCartItemQuantityAsync(cartId, productId, request.Quantity);
             if (!success)
                 return NotFound(new { message = "Cart item not found" });
 
             return Ok(new { message = "Cart item quantity updated" });
         }
 
-        // REMOVE PRODUCT FROM CART
-        [HttpDelete("remove/{cartItemId}")]
-        public async Task<IActionResult> RemoveProductFromCart(int cartItemId)
-        {
-            var success = await _cartService.RemoveProductFromCartAsync(cartItemId);
-            if (!success)
-                return NotFound(new { message = "Cart item not found" });
 
-            return Ok(new { message = "Product removed from cart" });
+        // REMOVE PRODUCT FROM CART
+        [HttpDelete("{cartId}/product/{productId}")]
+        public async Task<IActionResult> RemoveProductFromCart(int cartId, int productId)
+        {
+            var result = await _cartService.RemoveProductFromCartAsync(cartId, productId);
+            if (!result)
+                return NotFound();
+
+            return Ok("Product removed from cart.");
         }
+
 
         // CLEAR CART
         [HttpDelete("clear/{cartId}")]
