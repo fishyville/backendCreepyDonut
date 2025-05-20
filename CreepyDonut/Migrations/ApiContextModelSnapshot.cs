@@ -82,6 +82,50 @@ namespace CreepyDonut.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("CreepyDonut.Models.Order", b =>
+                {
+                    b.Property<int>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OrderId");
+
+                    b.HasIndex("CartId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Orders");
+                });
+
             modelBuilder.Entity("CreepyDonut.Models.Product", b =>
                 {
                     b.Property<int>("ProductId")
@@ -220,7 +264,7 @@ namespace CreepyDonut.Migrations
                     b.HasOne("CreepyDonut.Models.Users", "User")
                         .WithOne("Cart")
                         .HasForeignKey("CreepyDonut.Models.Cart", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -231,18 +275,37 @@ namespace CreepyDonut.Migrations
                     b.HasOne("CreepyDonut.Models.Cart", "Cart")
                         .WithMany("CartItems")
                         .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("CreepyDonut.Models.Product", "Product")
                         .WithMany("CartItems")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Cart");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("CreepyDonut.Models.Order", b =>
+                {
+                    b.HasOne("CreepyDonut.Models.Cart", "Cart")
+                        .WithOne("Order")
+                        .HasForeignKey("CreepyDonut.Models.Order", "CartId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CreepyDonut.Models.Users", "User")
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CreepyDonut.Models.Product", b =>
@@ -261,13 +324,13 @@ namespace CreepyDonut.Migrations
                     b.HasOne("CreepyDonut.Models.Product", "Product")
                         .WithMany("ProductShops")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Shop", "Shop")
                         .WithMany("ProductShops")
                         .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -286,7 +349,7 @@ namespace CreepyDonut.Migrations
                     b.HasOne("CreepyDonut.Models.Users", "User")
                         .WithMany("Reviews")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -297,6 +360,8 @@ namespace CreepyDonut.Migrations
             modelBuilder.Entity("CreepyDonut.Models.Cart", b =>
                 {
                     b.Navigation("CartItems");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("CreepyDonut.Models.Category", b =>
@@ -316,6 +381,8 @@ namespace CreepyDonut.Migrations
             modelBuilder.Entity("CreepyDonut.Models.Users", b =>
                 {
                     b.Navigation("Cart");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("Reviews");
                 });
