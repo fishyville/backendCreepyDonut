@@ -43,7 +43,8 @@ namespace CreepyDonut.Services
                     Id = ci.CartItemId,
                     ProductId = ci.ProductId,
                     ProductName = ci.Product?.Name,
-                    Quantity = ci.Quantity
+                    Quantity = ci.Quantity,
+                    Price = ci.Product?.Price
                 }).ToList()
             };
 

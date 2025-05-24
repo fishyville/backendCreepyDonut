@@ -4,6 +4,7 @@ using CreepyDonut.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CreepyDonut.DTO;
+using CreepyDonut.DTO.CreepyDonut.DTO;
 
 namespace CreepyDonut.Controllers
 {
@@ -50,13 +51,21 @@ namespace CreepyDonut.Controllers
         [HttpPost]
         public async Task<ActionResult<UsersDTO>> PostAsync(RegisterDTO registerDto)
         {
+            // Extract username from email
+            var emailParts = registerDto.Email.Split('@');
+            var generatedUsername = emailParts[0];
+
+            // Generate a random 10-digit phone number
+            var random = new Random();
+            var generatedPhoneNumber = random.Next(1000000000, int.MaxValue).ToString();
+
             var newUser = new UsersDTO
             {
                 UserId = 0,
-                Username = registerDto.Username,
+                Username = generatedUsername,
                 Email = registerDto.Email,
-                Password = registerDto.Password,   
-                PhoneNumber = registerDto.PhoneNumber,
+                Password = registerDto.Password,
+                PhoneNumber = generatedPhoneNumber,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -67,13 +76,14 @@ namespace CreepyDonut.Controllers
                 UserId = createdUser.UserId,
                 Username = createdUser.Username,
                 Email = createdUser.Email,
-                Password = createdUser.PasswordHash,  
+                Password = createdUser.PasswordHash,
                 PhoneNumber = createdUser.PhoneNumber,
                 CreatedAt = createdUser.CreatedAt
             };
 
             return CreatedAtAction(nameof(GetAsync), new { id = userDto.UserId }, userDto);
         }
+
 
         [HttpPost("login-username")]
         public async Task<ActionResult<UsersDTO>> LoginWithUsername([FromBody] LoginRequestUsername loginDto)
@@ -144,5 +154,42 @@ namespace CreepyDonut.Controllers
                 return NotFound();
             return NoContent();
         }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetDto)
+        {
+            if (string.IsNullOrWhiteSpace(resetDto.Email) ||
+                string.IsNullOrWhiteSpace(resetDto.NewPassword) ||
+                string.IsNullOrWhiteSpace(resetDto.ConfirmPassword))
+            {
+                return BadRequest("All fields are required.");
+            }
+
+            if (resetDto.NewPassword != resetDto.ConfirmPassword)
+            {
+                return BadRequest("New password and confirmation do not match.");
+            }
+
+            var users = await _userService.GetAllAsync();
+            var user = users.FirstOrDefault(u => u.Email == resetDto.Email);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            user.PasswordHash = resetDto.NewPassword;
+            var updated = await _userService.UpdateAsync(user.UserId, user);
+
+            if (!updated)
+            {
+                return StatusCode(500, "Failed to update password.");
+            }
+
+            Console.WriteLine($"🔒 Password reset for '{user.Email}' at {DateTime.UtcNow}");
+
+            return Ok("Password updated successfully.");
+        }
+
     }
 }
