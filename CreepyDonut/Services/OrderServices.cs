@@ -53,11 +53,19 @@ namespace CreepyDonut.Services
 
         public async Task<OrderResponse> CreateAsync(OrderRequest req)
         {
-            var user = await _context.Users.FindAsync(req.UserId);
+            var user = await _context.Users
+                .Include(u => u.Cart)
+                .FirstOrDefaultAsync(u => u.UserId == req.UserId);
             if (user == null) throw new Exception("User not found");
 
-            var cart = await _context.Carts.FindAsync(req.CartId);
+            var cart = await _context.Carts
+                .Include(c => c.Order)
+                .FirstOrDefaultAsync(c => c.CartId == req.CartId && c.UserId == user.UserId);
             if (cart == null) throw new Exception("Cart not found");
+
+            // Check if this cart is already used for an order
+            if (cart.Order != null)
+                throw new Exception("This cart has already been used for an order.");
 
             var o = new Order
             {
@@ -72,6 +80,15 @@ namespace CreepyDonut.Services
             };
 
             _context.Orders.Add(o);
+            await _context.SaveChangesAsync();
+
+            // Detach the old cart from the user (break the one-to-one relationship)
+            user.Cart = null;
+            await _context.SaveChangesAsync();
+
+            // Now create a new cart for the user
+            var newCart = new Cart { UserId = user.UserId, User = user };
+            _context.Carts.Add(newCart);
             await _context.SaveChangesAsync();
 
             return await GetByIdAsync(o.OrderId) ?? throw new Exception("Error creating order");

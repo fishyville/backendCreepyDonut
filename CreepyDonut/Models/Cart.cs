@@ -9,7 +9,8 @@ namespace CreepyDonut.Models
         public int CartId { get; set; }
 
         [ForeignKey("User")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
+
 
         public required Users User { get; set; }  
 

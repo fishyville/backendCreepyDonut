@@ -32,7 +32,7 @@ namespace CreepyDonut.Data
                 .HasOne(u => u.Cart)
                 .WithOne(c => c.User)
                 .HasForeignKey<Cart>(c => c.UserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .IsRequired(false);
 
             // Cart <-> CartItem <-> Product (Many-to-Many via CartItem)    
             modelBuilder.Entity<CartItem>()
