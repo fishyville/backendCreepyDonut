@@ -116,6 +116,25 @@ namespace CreepyDonut.Services
             return true;
         }
 
+        public async Task<List<OrderResponse>> GetOrderResponsesByUserIdAsync(int userId)
+        {
+            var orders = await _context.Orders
+                .Where(o => o.UserId == userId)
+                .ToListAsync();
+
+            return orders.Select(o => new OrderResponse
+            {
+                OrderId = o.OrderId,
+                UserId = o.UserId,
+                CartId = o.CartId,
+                TotalPrice = o.TotalPrice,
+                Status = o.Status,
+                PaymentMethod = o.PaymentMethod ?? string.Empty,
+                ShippingAddress = o.ShippingAddress,
+                CreatedAt = o.CreatedAt,
+                UpdatedAt = o.UpdatedAt
+            }).ToList();
+        }
     }
 }
 

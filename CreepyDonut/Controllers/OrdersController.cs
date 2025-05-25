@@ -58,5 +58,14 @@ namespace CreepyDonut.Controllers
             return Ok(new { message = "Status updated successfully" });
         }
 
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<List<OrderResponse>>> GetOrdersByUserId(int userId)
+        {
+            var orders = await _service.GetOrderResponsesByUserIdAsync(userId);
+            if (orders == null || !orders.Any())
+                return NotFound();
+
+            return Ok(orders);
+        }
     }
 }
