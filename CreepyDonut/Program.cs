@@ -17,6 +17,8 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CartItemService>();
 builder.Services.AddScoped<OrderServices>();
+builder.Services.AddScoped<OpenAiService>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

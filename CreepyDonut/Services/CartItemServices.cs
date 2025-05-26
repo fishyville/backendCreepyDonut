@@ -3,6 +3,7 @@ using CreepyDonut.Data;
 using CreepyDonut.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CreepyDonut.DTO;
 
 namespace CreepyDonut.Services
 {
@@ -15,14 +16,26 @@ namespace CreepyDonut.Services
             _context = context;
         }
 
-        // GET CART ITEMS BY CART ID
-        public async Task<List<CartItem>> GetCartItemsAsync(int cartId)
+        // Fix for CS1061: Replace 'Id' with 'CartItemId' in the projection of GetCartItemsAsync method.  
+        public async Task<List<CartItemDto>> GetCartItemsAsync(int cartId)
         {
-            return await _context.CartItems
-                .Include(ci => ci.Product) 
+            var cartItems = await _context.CartItems
                 .Where(ci => ci.CartId == cartId)
+                .Include(ci => ci.Product) // assuming navigation property to Product  
                 .ToListAsync();
+
+            return cartItems.Select(ci => new CartItemDto
+            {
+                Id = ci.CartItemId, // Fixed: Use 'CartItemId' instead of 'Id'  
+                ProductId = ci.ProductId,
+                ProductName = ci.Product.Name,
+                Quantity = ci.Quantity,
+                Price = ci.Product.Price,
+                ImageUrl = ci.Product.ImageUrl,
+                CategoryId = ci.Product.CategoryId
+            }).ToList();
         }
+
 
         // ADD ITEM TO CART
         public async Task<bool> AddCartItemAsync(int cartId, int productId, int quantity)
