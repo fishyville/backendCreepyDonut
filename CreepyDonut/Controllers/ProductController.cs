@@ -56,6 +56,34 @@ namespace CreepyDonut.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdProduct.ProductId }, createdProduct);
         }
 
+        [HttpGet("search/{name}")]
+        public async Task<ActionResult<IEnumerable<ProductResponseDTO>>> SearchByName(string name)
+        {
+            var products = await _productService.GetAllAsync(); // This simulates access to the product list
+
+            var matchingProducts = products
+                .Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+                .Select(p => new ProductResponseDTO
+                {
+                    ProductId = p.ProductId,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Price = p.Price,
+                    ImageUrl = p.ImageUrl,
+                    Quantity = p.Quantity,
+                    CategoryId = p.CategoryId,
+                    CategoryName = "Example Category" // Replace with actual logic if needed
+                })
+                .ToList();
+
+            if (!matchingProducts.Any())
+                return NotFound(new { message = "No matching products found" });
+
+            return Ok(matchingProducts);
+        }
+
+
+
 
         // UPDATE PRODUCT
         [HttpPut("{id}")]
